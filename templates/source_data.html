@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Source Destination Input</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-container {
+            background: linear-gradient(45deg, #ff7e5f, #feb47b);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 350px;
+            text-align: center;
+        }
+
+        .form-container h1 {
+            margin-bottom: 20px;
+        }
+
+        .form-container label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .form-container button {
+            background: #ff7e5f;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .form-container button:hover {
+            background: #ff5e62;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Plan Your Trip</h1>
+        <form action="/submit" method="POST">
+            <label for="departure">Departure Airport</label>
+            <input type="text" id="departure" name="departure" placeholder="Enter airport name or code" required>
+
+            <label for="start-date">Start Date</label>
+            <input type="date" id="start-date" name="start_date" required>
+
+            <label for="end-date">End Date</label>
+            <input type="date" id="end-date" name="end_date" required>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+</html>

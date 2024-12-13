@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRIPICK INDIA Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(45deg, #ff7e5f, #feb47b);
+            color: #000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .content {
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            background-color: rgba(255, 126, 95, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .section h2 {
+            margin-top: 0;
+            color: #feb47b;
+        }
+
+        .tableau-container {
+            margin-bottom: 50px; /* Increased margin for more space */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #fff;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            word-wrap: break-word;
+            max-width: 250px;
+        }
+
+        th {
+            background-color: #feb47b;
+        }
+
+        td {
+            background-color: #333;
+        }
+
+        /* News Section Adjustments */
+        #news-info li {
+            margin-bottom: 10px;
+            list-style-type: none;
+            color: #feb47b;
+        }
+
+        #news-info li a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        #news-info li a:hover {
+            text-decoration: underline;
+        }
+
+        /* Weather Table Style */
+        #weather-info-table th, #weather-info-table td {
+            padding: 10px;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>TRIPICK INDIA Dashboard</h1>
+    </header>
+    <div class="content">
+        <!-- Tableau Dashboard -->
+        <div class="tableau-container">
+            <h2>Explore Cities</h2>
+            <div id='tableauViz' style="width: 100%; height: 800px;"></div>
+        </div>
+
+        <!-- Weather Section -->
+        <div class="section" id="weather">
+            <h2>Weather Information</h2>
+            <table id="weather-info-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Temperature (°C)</th>
+                        <th>Weather</th>
+                    </tr>
+                </thead>
+                <tbody id="weather-info">
+                    <!-- Weather data will be inserted here -->
+                    <tr>
+                        <td colspan="3">Click on a city in the map to see real-time weather updates here.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- News Section -->
+        <div class="section" id="news">
+            <h2>Latest News</h2>
+            <ul id="news-info">
+                <li>Click on a city in the map to see the latest news here.</li>
+            </ul>
+        </div>
+
+        <!-- Flight Pricing Section -->
+        <div class="section" id="flights">
+            <h2>Flight Pricing</h2>
+            <table id="flight-table">
+                <thead>
+                    <tr>
+                        <th>Flight Name</th>
+                        <th>Price</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="3">Click on a city to see flight data.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tableau and Custom Script -->
+    <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
+    <script type="text/javascript">
+        let viz; // Global reference to Tableau Viz
+
+        function handleCityClick(city, departure) {
+            console.log("City clicked:", city); // Debugging
+
+            // Fetch data from backend for the selected city
+            fetch(`/get_city_data?city=${encodeURIComponent(city)}&departure=${encodeURIComponent(departure)}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update Weather Section
+                    const weatherTable = document.getElementById("weather-info");
+                    weatherTable.innerHTML = ""; // Clear previous data
+                    data.weather.forEach(item => {
+                        const row = weatherTable.insertRow();
+                        row.insertCell(0).textContent = item.date;
+                        row.insertCell(1).textContent = `${item.temperature}°C`;
+                        row.insertCell(2).textContent = item.weather;
+                    });
+
+                    // Update News Section
+                    const newsList = document.getElementById("news-info");
+                    newsList.innerHTML = "";
+                    data.news.forEach(article => {
+                        const listItem = document.createElement("li");
+                        listItem.innerHTML = `<a href="${article.url}" target="_blank">${article.title}</a>: ${article.description}`;
+                        newsList.appendChild(listItem);
+                    });
+
+                    // Update Flight Pricing Section
+                    const flightTable = document.getElementById("flight-table").getElementsByTagName('tbody')[0];
+                    flightTable.innerHTML = "";  // Clear previous data
+                    if (data.flights.length === 0) {
+                        const noDataRow = flightTable.insertRow();
+                        const noDataCell = noDataRow.insertCell();
+                        noDataCell.colSpan = 3;
+                        noDataCell.textContent = "No flight data available.";
+                    } else {
+                        data.flights.forEach(flight => {
+                            const row = flightTable.insertRow();
+                            row.insertCell(0).textContent = flight.flight_name;
+                            row.insertCell(1).textContent = flight.price;
+                            row.insertCell(2).textContent = flight.duration;
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                });
+        }
+
+        function initializeTableauViz() {
+            const containerDiv = document.getElementById("tableauViz");
+            const url = "https://public.tableau.com/views/TRIPICKINDIAF/TRIPICKINDIA";
+
+            const options = {
+                hideTabs: true,
+                onFirstInteractive: function () {
+                    console.log("Tableau Dashboard Loaded.");
+
+                    // Event listener for marks selection
+                    viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, function (event) {
+                        event.getMarksAsync().then(function (marks) {
+                            if (marks.length > 0) {
+                                // Extract city name from selected marks
+                                const pairs = marks[0].getPairs();
+                                const cityField = pairs.find(pair => pair.fieldName.includes("City"));
+                                if (cityField) {
+                                    const city = cityField.formattedValue;
+                                    const departure = "JFK";  // Example: Hardcoded departure airport, should be dynamic
+                                    handleCityClick(city, departure);
+                                }
+                            }
+                        });
+                    });
+                }
+            };
+
+            // Initialize Tableau Viz
+            viz = new tableau.Viz(containerDiv, url, options);
+        }
+
+        // Load Tableau Dashboard on DOM content load
+        document.addEventListener("DOMContentLoaded", initializeTableauViz);
+    </script>
+</body>
+</html>
